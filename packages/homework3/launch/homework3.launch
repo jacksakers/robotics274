@@ -1,5 +1,0 @@
-<launch>
-  <node pkg="homework2" name="homework2" type="homework2.py"/>
-  <node pkg="homework3" name="homework3_talker" type="homework3.py"/>
-  <node pkg="homework3" name="homework3_listener" type="homework3sub.py"/>
-</launch>

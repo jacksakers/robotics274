@@ -1,0 +1,10 @@
+<launch>
+  <param name="unit" type="str" value="smoots" />
+  <group ns="homework2">
+    <node pkg="homework2" name="homework2" type="homework2.py"/>
+  </group>
+  <node pkg="homework5" name="homework5" type="homework5.py" output="screen" />
+  <remap from="homework2/total" to="converter" />
+  <node pkg="homework3right" name="talker" type="talker.py" />
+  <node pkg="homework3right" name="listener" type="listener.py" output="screen" />
+</launch>

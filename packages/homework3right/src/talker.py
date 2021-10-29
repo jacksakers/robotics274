@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
-#
+
 import rospy
 from std_msgs.msg import Float32
+import random
 
-def homework3():
-    pub = rospy.Publisher('delta', Float32, queue_size=10)
-    rospy.init_node('homework3', anonymous=True)
+def talker():
+    pub = rospy.Publisher('/homework2/delta', Float32, queue_size=10)
+    rospy.init_node('talker')
     rate = rospy.Rate(10)
+
     while not rospy.is_shutdown():
-        pub.publish(69)
+        pub.publish(random.randint(1,100))
         rate.sleep()
 
 if __name__ == '__main__':
     try:
-        homework3()
+        talker()
     except rospy.ROSInterruptException:
         pass
-
