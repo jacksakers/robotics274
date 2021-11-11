@@ -24,7 +24,6 @@ class LaneController:
         ~phi_resolution (:obj:`float`): Resolution of heading estimate
         ~omega_ff (:obj:`float`): Feedforward part of controller
         ~verbose (:obj:`bool`): Verbosity level (0,1,2)
-        ~stop_line_slowdown (:obj:`dict`): Start and end distances for slowdown at stop lines
 
     """
 
@@ -43,7 +42,7 @@ class LaneController:
         """
         self.parameters = parameters
 
-    def compute_control_action(self, d_err, phi_err, dt, wheels_cmd_exec, stop_line_distance):
+    def compute_control_action(self, d_err, phi_err, dt, wheels_cmd_exec):
         """Main function, computes the control action given the current error signals.
 
         Given an estimate of the error, computes a control action (tuple of linear and angular velocity). This is done
@@ -55,7 +54,6 @@ class LaneController:
             dt (:obj:`float`): time since last command update
             wheels_cmd_exec (:obj:`bool`): confirmation that the wheel commands have been executed (to avoid
                                            integration while the robot does not move)
-            stop_line_distance (:obj:`float`):  distance of the stop line, None if not detected.
         Returns:
             v (:obj:`float`): requested linear velocity in meters/second
             omega (:obj:`float`): requested angular velocity in radians/second
@@ -87,34 +85,10 @@ class LaneController:
         self.prev_d_err = d_err
         self.prev_phi_err = phi_err
 
-        v = self.compute_velocity(stop_line_distance)
+        v = self.parameters["~v_bar"].value
 
         return v, omega
 
-    def compute_velocity(self, stop_line_distance):
-        """Linearly decrease velocity if approaching a stop line.
-
-        If a stop line is detected, the velocity is linearly decreased to achieve a better stopping position,
-        otherwise the nominal velocity is returned.
-
-        Args:
-            stop_line_distance (:obj:`float`): distance of the stop line, None if not detected.
-        """
-        if stop_line_distance is None:
-            return self.parameters["~v_bar"].value
-        else:
-
-            d1, d2 = (
-                self.parameters["~stop_line_slowdown"]["start"],
-                self.parameters["~stop_line_slowdown"]["end"],
-            )
-            # d1 -> v_bar, d2 -> v_bar/2
-            c = (0.5 * (d1 - stop_line_distance) + (stop_line_distance - d2)) / (d1 - d2)
-            v_new = self.parameters["~v_bar"].value * c
-            v = np.max(
-                [self.parameters["~v_bar"].value / 2.0, np.min([self.parameters["~v_bar"].value, v_new])]
-            )
-            return v
 
     def integrate_errors(self, d_err, phi_err, dt):
         """Integrates error signals in lateral and heading direction.

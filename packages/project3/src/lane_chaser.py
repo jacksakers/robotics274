@@ -9,7 +9,6 @@ from duckietown_msgs.msg import (
     WheelsCmdStamped,
     BoolStamped,
     FSMState,
-    StopLineReading,
 )
 
 from lane_controller.controller import LaneController
@@ -36,16 +35,12 @@ class LaneControllerNode(DTROS):
         ~phi_resolution (:obj:`float`): Resolution of heading estimate
         ~omega_ff (:obj:`float`): Feedforward part of controller
         ~verbose (:obj:`bool`): Verbosity level (0,1,2)
-        ~stop_line_slowdown (:obj:`dict`): Start and end distances for slowdown at stop lines
 
     Publisher:
         ~car_cmd (:obj:`Twist2DStamped`): The computed control action
     Subscribers:
         ~lane_pose (:obj:`LanePose`): The lane pose estimate from the lane filter
-        ~intersection_navigation_pose (:obj:`LanePose`): The lane pose estimate from intersection navigation
         ~wheels_cmd_executed (:obj:`WheelsCmdStamped`): Confirmation that the control action was executed
-        ~stop_line_reading (:obj:`StopLineReading`): Distance from stopline, to reduce speed
-        ~obstacle_distance_reading (:obj:`stop_line_reading`): Distancefrom obstacle virtual stopline, to reduce speed
     """
 
     def __init__(self, node_name):
@@ -73,7 +68,6 @@ class LaneControllerNode(DTROS):
         self.params["~phi_resolution"] = rospy.get_param("~phi_resolution", None)
         self.params["~omega_ff"] = rospy.get_param("~omega_ff", None)
         self.params["~verbose"] = rospy.get_param("~verbose", None)
-        self.params["~stop_line_slowdown"] = rospy.get_param("~stop_line_slowdown", None)
 
         # Need to create controller object before updating parameters, otherwise it will fail
         self.controller = LaneController(self.params)
@@ -86,12 +80,6 @@ class LaneControllerNode(DTROS):
         self.pose_initialized = False
         self.pose_msg_dict = dict()
         self.last_s = None
-        self.stop_line_distance = None
-        self.stop_line_detected = False
-        self.at_stop_line = False
-        self.obstacle_stop_line_distance = None
-        self.obstacle_stop_line_detected = False
-        self.at_obstacle_stop_line = False
 
         self.current_pose_source = "lane_filter"
 
@@ -114,44 +102,16 @@ class LaneControllerNode(DTROS):
         self.sub_wheels_cmd_executed = rospy.Subscriber(
             "~wheels_cmd", WheelsCmdStamped, self.cbWheelsCmdExecuted, queue_size=1
         )
-        self.sub_stop_line = rospy.Subscriber(
-            "~stop_line_reading", StopLineReading, self.cbStopLineReading, queue_size=1
-        )
-        self.sub_obstacle_stop_line = rospy.Subscriber(
-            "~obstacle_distance_reading", StopLineReading, self.cbObstacleStopLineReading, queue_size=1
-        )
 
         self.log("Initialized!")
 
-    def cbObstacleStopLineReading(self, msg):
-        """
-        Callback storing the current obstacle distance, if detected.
 
-        Args:
-            msg(:obj:`StopLineReading`): Message containing information about the virtual obstacle stopline.
-        """
-        self.obstacle_stop_line_distance = np.sqrt(msg.stop_line_point.x ** 2 + msg.stop_line_point.y ** 2)
-        self.obstacle_stop_line_detected = msg.stop_line_detected
-        self.at_stop_line = msg.at_stop_line
-
-    def cbStopLineReading(self, msg):
-        """Callback storing current distance to the next stopline, if one is detected.
-
-        Args:
-            msg (:obj:`StopLineReading`): Message containing information about the next stop line.
-        """
-        self.stop_line_distance = np.sqrt(msg.stop_line_point.x ** 2 + msg.stop_line_point.y ** 2)
-        self.stop_line_detected = msg.stop_line_detected
-        self.at_obstacle_stop_line = msg.at_stop_line
 
     def cbMode(self, fsm_state_msg):
 
         self.fsm_state = fsm_state_msg.state  # String of current FSM state
 
-        if self.fsm_state == "INTERSECTION_CONTROL":
-            self.current_pose_source = "intersection_navigation"
-        else:
-            self.current_pose_source = "lane_filter"
+        self.current_pose_source = "lane_filter"
 
         if self.params["~verbose"] == 2:
             self.log("Pose source: %s" % self.current_pose_source)
@@ -202,36 +162,23 @@ class LaneControllerNode(DTROS):
         if self.last_s is not None:
             dt = current_s - self.last_s
 
-        if self.at_stop_line or self.at_obstacle_stop_line:
-            v = 0
-            omega = 0
-        else:
 
-            # Compute errors
-            d_err = pose_msg.d - self.params["~d_offset"]
-            phi_err = pose_msg.phi
+        # Compute errors
+        d_err = pose_msg.d - self.params["~d_offset"]
+        phi_err = pose_msg.phi
 
-            # We cap the error if it grows too large
-            if np.abs(d_err) > self.params["~d_thres"]:
-                self.log("d_err too large, thresholding it!", "error")
-                d_err = np.sign(d_err) * self.params["~d_thres"]
+        # We cap the error if it grows too large
+        if np.abs(d_err) > self.params["~d_thres"]:
+            self.log("d_err too large, thresholding it!", "error")
+            d_err = np.sign(d_err) * self.params["~d_thres"]
 
-            wheels_cmd_exec = [self.wheels_cmd_executed.vel_left, self.wheels_cmd_executed.vel_right]
-            if self.obstacle_stop_line_detected:
-                v, omega = self.controller.compute_control_action(
-                    d_err, phi_err, dt, wheels_cmd_exec, self.obstacle_stop_line_distance
-                )
-                # TODO: This is a temporarily fix to avoid vehicle image detection latency caused unable to stop in time.
-                v = v * 0.25
-                omega = omega * 0.25
+        wheels_cmd_exec = [self.wheels_cmd_executed.vel_left, self.wheels_cmd_executed.vel_right]
+        v, omega = self.controller.compute_control_action(
+            d_err, phi_err, dt, wheels_cmd_exec, self.stop_line_distance
+        )
 
-            else:
-                v, omega = self.controller.compute_control_action(
-                    d_err, phi_err, dt, wheels_cmd_exec, self.stop_line_distance
-                )
-
-            # For feedforward action (i.e. during intersection navigation)
-            omega += self.params["~omega_ff"]
+        # For feedforward action (i.e. during intersection navigation)
+        omega += self.params["~omega_ff"]
 
         # Initialize car control msg, add header from input message
         car_control_msg = Twist2DStamped()
