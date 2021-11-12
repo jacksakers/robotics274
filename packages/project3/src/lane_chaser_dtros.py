@@ -1,13 +1,18 @@
 #!/usr/bin/env python3
 
+import numpy as np
 import rospy
+
+from duckietown.dtros import DTROS, NodeType, TopicType, DTParam, ParamType
 from duckietown_msgs.msg import Twist2DStamped
 from duckietown_msgs.msg import LanePose
 from duckietown_msgs.msg import FSMState
 from time import sleep
 
-class LaneChaser:
-    def __init__(self):
+class LaneChaser(DTROS):
+    def __init__(self, node_name):
+        super(LaneChaser, self).__init__(node_name=node_name, node_type=NodeType.PERCEPTION)
+
         self.pub = rospy.Publisher('~car_cmd', Twist2DStamped, queue_size=1)
         self.lane_pose = rospy.Subscriber('/lane_filter_node/lane_pose', LanePose, self.listener)
         self.state = rospy.Subscriber('/fsm_node/mode', FSMState, self.listener)
@@ -29,7 +34,5 @@ class LaneChaser:
 
 
 if __name__ == '__main__':
-    rospy.init_node('lane_chaser')
-    while not rospy.is_shutdown():
-        LaneChaser()
+    lane_controller_node = LaneChaser(node_name="lane_chaser")
     rospy.spin()
