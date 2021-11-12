@@ -93,6 +93,7 @@ class LaneControllerNode(DTROS):
 
     def publishCmd(self, car_cmd_msg):
         self.pub_car_cmd.publish(car_cmd_msg)
+        rospy.loginfo("JACK SAKERS LANE FOLLOWER IS WORKING!")
 
     def getControlAction(self, pose_msg):
         current_s = rospy.Time.now().to_sec()
