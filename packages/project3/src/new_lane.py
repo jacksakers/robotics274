@@ -12,7 +12,7 @@ from duckietown_msgs.msg import (
     StopLineReading,
 )
 
-from my_controller.controller import LaneController
+from lane_controller.controller import LaneController
 
 
 class LaneControllerNode(DTROS):
@@ -107,15 +107,15 @@ class LaneControllerNode(DTROS):
         if np.abs(d_err) > self.params["~d_thres"]:
             self.log("d_err too large, thresholding it!", "error")
             d_err = np.sign(d_err) * self.params["~d_thres"]
-         wheels_cmd_exec = [self.wheels_cmd_executed.vel_left, self.wheels_cmd_executed.vel_right]
+        wheels_cmd_exec = [self.wheels_cmd_executed.vel_left, self.wheels_cmd_executed.vel_right]
         
          
-         v, omega = self.controller.compute_control_action(
-            d_err, phi_err, dt, wheels_cmd_exec
-         )
+        v, omega = self.controller.compute_control_action(
+           d_err, phi_err, dt, wheels_cmd_exec
+        )
 
-         # For feedforward action (i.e. during intersection navigation)
-         omega += self.params["~omega_ff"]
+        # For feedforward action (i.e. during intersection navigation)
+        omega += self.params["~omega_ff"]
 
         # Initialize car control msg, add header from input message
         car_control_msg = Twist2DStamped()
