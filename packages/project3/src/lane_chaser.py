@@ -25,13 +25,13 @@ class PIDCalc:
 
 class talker:
     def _init_(self):
-        sub = rospy.Subscriber('lane_controller_node/lane_post', Pose2DStamped, self.pose_callback)
+        sub = rospy.Subscriber('lane_controller_node/lane_post', Pose2DStamped, self.talk)
         pub = rospy.Publisher('car_cmd_switch_node/cmd', Twist2DStamped, queue_size=10)
         rospy.init_node('lane_chaser', anonymous=True)
         rate = rospy.Rate(10)
-    def talk():
+    def talk(self, data):
         __init__()
-        vel, o = update(sub)
+        vel, o = update(data.data)
         msg = Twist2DStamped(header=None, v=vel, omega=o)
         pub.publish(msg)
 if __name__ == '__main__':
