@@ -23,7 +23,7 @@ class LaneController:
         
         d_err_array.apend(d_err)
         d_err_array = d_err_array[1:]
-        d_err = sum(d_err_array) / d_err_array.len()
+        d_err = sum(d_err_array) / len(d_err_array)
         
         if np.abs(d_err) < 0.02:
             d_err = 0
