@@ -11,6 +11,8 @@ class LaneController:
         self.prev_phi_err = 1.0
         self.d_deriv = 0
         self.phi_deriv = 0
+        d_err_array = [0, 0, 0, 0]
+
 
     def update_parameters(self, parameters):
         self.parameters = parameters
@@ -19,6 +21,9 @@ class LaneController:
 
         self.reset_if_needed(d_err, phi_err, wheels_cmd_exec)
         
+        d_err_array.apend(d_err)
+        d_err_array = d_err_array[1:]
+        d_err = sum(d_err_array) / d_err_array.len()
         
         if np.abs(d_err) < 0.02:
             d_err = 0
