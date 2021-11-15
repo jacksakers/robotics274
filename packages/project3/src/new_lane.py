@@ -13,7 +13,7 @@ from duckietown_msgs.msg import (
     StopLineReading,
 )
 
-from my_controller import LaneController
+from my_controller_attempt import LaneController
 
 
 class LaneControllerNode(DTROS):
@@ -31,6 +31,11 @@ class LaneControllerNode(DTROS):
         self.params["~k_Id"] = DTParam("~k_Id", param_type=ParamType.FLOAT, min_value=-100.0, max_value=100.0)
         self.params["~k_Iphi"] = DTParam(
             "~k_Iphi", param_type=ParamType.FLOAT, min_value=-100.0, max_value=100.0
+        )
+        
+        self.params["~k_Dd"] = DTParam("~k_Dd", param_type=ParamType.FLOAT, min_value=-100.0, max_value=100.0)
+        self.params["~k_Dphi"] = DTParam(
+            "~k_Dphi", param_type=ParamType.FLOAT, min_value=-100.0, max_value=100.0
         )
         self.params["~theta_thres"] = rospy.get_param("~theta_thres", None)
         self.params["~d_thres"] = rospy.get_param("~d_thres", None)
