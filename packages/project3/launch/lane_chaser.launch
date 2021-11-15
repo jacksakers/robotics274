@@ -34,7 +34,7 @@
     </include>
     <group ns="$(env VEHICLE_NAME)">
 
-       <node pkg="project3" name="new_lane" type="new_lane.py" output="screen" 
+       <node pkg="project3" name="new_lane" type="new_lane.py" output="screen">
            <rosparam command="load" file="$(find project3)/config/default.yaml"/>
        </node>
     
