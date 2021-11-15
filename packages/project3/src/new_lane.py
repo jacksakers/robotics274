@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import numpy as np
 import rospy
+import time
 
 from duckietown.dtros import DTROS, NodeType, TopicType, DTParam, ParamType
 from duckietown_msgs.msg import (
@@ -12,7 +13,7 @@ from duckietown_msgs.msg import (
     StopLineReading,
 )
 
-from lane_controller.controller import LaneController
+from my_controller import LaneController
 
 
 class LaneControllerNode(DTROS):
@@ -54,46 +55,50 @@ class LaneControllerNode(DTROS):
 
         # Construct publishers
         self.pub_car_cmd = rospy.Publisher(
-            "~car_cmd", Twist2DStamped, queue_size=1, dt_topic_type=TopicType.CONTROL
+            "/duck32/car_cmd_switch_node/cmd", Twist2DStamped, queue_size=1, dt_topic_type=TopicType.CONTROL
         )
 
         # Construct subscribers
         self.sub_lane_reading = rospy.Subscriber(
-            "~lane_pose", LanePose, self.cbAllPoses, "lane_filter", queue_size=1
+            "/duck32/lane_filter_node/lane_pose", LanePose, self.cbAllPoses, "lane_filter", queue_size=1
         )
         self.sub_wheels_cmd_executed = rospy.Subscriber(
             "~wheels_cmd", WheelsCmdStamped, self.cbWheelsCmdExecuted, queue_size=1
         )
         
+        self.sub_state = rospy.Subscriber(
+            "/duck32/fsm_node/mode", FSMState, self.cbMode, queue_size=1
+        )
         self.log("Jack Sakers is Initialized!")
+
 
 
     
 
     def cbMode(self, fsm_state_msg):
-
+ 
         self.fsm_state = fsm_state_msg.state  # String of current FSM state
-
+        if self.fsm_state == "LANE_FOLLOWING":
+            self.checker = 1
+        else:
+            self.checker = 0
         self.current_pose_source = "lane_filter"
 
         if self.params["~verbose"] == 2:
             self.log("Pose source: %s" % self.current_pose_source)
 
     def cbAllPoses(self, input_pose_msg, pose_source):
+        self.pose_msg = input_pose_msg
 
-        if pose_source == self.current_pose_source:
-            self.pose_msg_dict[pose_source] = input_pose_msg
-
-            self.pose_msg = input_pose_msg
-
-            self.getControlAction(self.pose_msg)
+        self.getControlAction(self.pose_msg)
 
     def cbWheelsCmdExecuted(self, msg_wheels_cmd):
         self.wheels_cmd_executed = msg_wheels_cmd
 
     def publishCmd(self, car_cmd_msg):
-        self.pub_car_cmd.publish(car_cmd_msg)
-        rospy.loginfo("JACK SAKERS LANE FOLLOWER IS WORKING!")
+        if self.checker == 1:
+            self.pub_car_cmd.publish(car_cmd_msg)
+            rospy.loginfo("JACK SAKERS LANE FOLLOWER IS WORKING!")
 
     def getControlAction(self, pose_msg):
         current_s = rospy.Time.now().to_sec()
@@ -103,19 +108,21 @@ class LaneControllerNode(DTROS):
 
         d_err = pose_msg.d - self.params["~d_offset"]
         phi_err = pose_msg.phi
+        self.log("d: %s" % pose_msg.d)
+        self.log("phi: %s" % pose_msg.phi)
 
         if np.abs(d_err) > self.params["~d_thres"]:
             self.log("d_err too large, thresholding it!", "error")
             d_err = np.sign(d_err) * self.params["~d_thres"]
-        wheels_cmd_exec = [self.wheels_cmd_executed.vel_left, self.wheels_cmd_executed.vel_right]
+        wheels_cmd_exec = [1,1]
         
          
         v, omega = self.controller.compute_control_action(
            d_err, phi_err, dt, wheels_cmd_exec
         )
 
-        # For feedforward action (i.e. during intersection navigation)
-        omega += self.params["~omega_ff"]
+        self.log("v: %s" % v)
+        self.log("omega: %s" % omega)
 
         # Initialize car control msg, add header from input message
         car_control_msg = Twist2DStamped()
