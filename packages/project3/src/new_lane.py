@@ -136,7 +136,7 @@ class LaneControllerNode(DTROS):
         # Add commands to car message
         car_control_msg.v = v
         car_control_msg.omega = omega
-
+        
         self.publishCmd(car_control_msg)
         self.last_s = current_s
 
