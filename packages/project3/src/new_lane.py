@@ -113,8 +113,7 @@ class LaneControllerNode(DTROS):
 
         d_err = pose_msg.d - self.params["~d_offset"]
         phi_err = pose_msg.phi
-        self.log("d: %s" % pose_msg.d)
-        self.log("phi: %s" % pose_msg.phi)
+        
 
         if np.abs(d_err) > self.params["~d_thres"]:
             self.log("d_err too large, thresholding it!", "error")
