@@ -1,3 +1,4 @@
+import rospy
 import numpy as np
 from time import sleep
 
@@ -50,7 +51,8 @@ class LaneController:
         if self.phi_I < -1.2:
             self.d_I = -1.2
 
-        
+        rospy.loginfo("d: %s" % d_err)
+        rospy.loginfo("phi: %s" % phi_err)
 
         omega = (
             self.parameters["~k_d"].value * d_err
