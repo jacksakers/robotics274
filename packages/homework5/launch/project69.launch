@@ -1,1 +1,5 @@
-test
+<launch>
+  <param name="firstpause" type="float" value="3" />
+  <param name="secondpause" type="float" value="3" />
+  <node pkg="homework5" name="project69" type="project69.py" output="screen" />
+</launch>
