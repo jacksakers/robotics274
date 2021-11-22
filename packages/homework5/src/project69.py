@@ -6,7 +6,7 @@ from time import sleep
 
 class Project69:
     def __init__(self):
-        self.pub = rospy.Publisher('/duck32/car_cmd/cmd', Float32, queue_size=10) #CHANGE TO CORRECT TOPIC and type
+        self.pub = rospy.Publisher('/duck32/car_cmd/cmd', Float32, queue_size=1) #CHANGE TO CORRECT TOPIC and type
         self.v_left = 0.0
         self.v_right = 0.0
         self.firstpause = rospy.get_param('firstpause', None)
