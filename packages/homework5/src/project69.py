@@ -9,8 +9,8 @@ class Project69:
         self.pub = rospy.Publisher('/duck32/car_cmd/cmd', Float32, queue_size=10) #CHANGE TO CORRECT TOPIC and type
         self.v_left = 0.0
         self.v_right = 0.0
-        self.firstpause = rospy.get_param('firstpause')
-        self.secondpause = rospy.get_param('secondpause')
+        self.firstpause = rospy.get_param('firstpause', None)
+        self.secondpause = rospy.get_param('secondpause', None)
         for x in range(6):
           self.v_left = 0.5
           self.v_right = 0.5
