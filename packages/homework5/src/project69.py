@@ -19,23 +19,25 @@ class Project69:
         self.v_right = 0.0
         self.firstpause = rospy.get_param('firstpause', None)
         self.secondpause = rospy.get_param('secondpause', None)
+        self.switch = rospy.get_param('switch', None)
         self.talker()
-        sleep(4)
-        for x in range(3):
-          rospy.loginfo("Going Straight")
-          self.v_left = 0.5
-          self.v_right = 0.5
+        sleep(1)
+        if self.switch = 1:
+          for x in range(3):
+            rospy.loginfo("Going Straight")
+            self.v_left = 0.5
+            self.v_right = 0.5
+            self.talker()
+            sleep(self.firstpause)
+            rospy.loginfo("Turning")
+            self.v_left = 0.2
+            self.v_right = 0.5
+            self.talker()
+            sleep(self.secondpause)
+            rospy.loginfo("Looping")
+          self.v_left = 0
+          self.v_right = 0
           self.talker()
-          sleep(2.5)
-          rospy.loginfo("Turning")
-          self.v_left = 0.2
-          self.v_right = 0.5
-          self.talker()
-          sleep(4)
-          rospy.loginfo("Looping")
-        self.v_left = 0
-        self.v_right = 0
-        self.talker()
 
     def talker(self):
         msg = WheelsCmdStamped(None, self.v_left, self.v_right) #change to correct type
@@ -44,3 +46,4 @@ class Project69:
 if __name__ == '__main__':
     rospy.init_node('project69')
     Project69()
+    rospy.spin()
