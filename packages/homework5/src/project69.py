@@ -24,7 +24,7 @@ class Project69:
             self.secondpause = rospy.get_param('secondpause', None)
             self.switch = rospy.get_param('switch', None)
             self.turnvel = rospy.get_param('turnvel', None)
-            if self.switch = 1:
+            if self.switch == 1:
                 rospy.loginfo("Going Straight")
                 self.v_left = 0.5
                 self.v_right = 0.5
