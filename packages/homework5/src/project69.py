@@ -17,27 +17,29 @@ class Project69:
         self.pub = rospy.Publisher('/duck32/wheels_driver_node/wheels_cmd', WheelsCmdStamped, queue_size=1) #CHANGE TO CORRECT TOPIC and type
         self.v_left = 0.0
         self.v_right = 0.0
-        self.firstpause = rospy.get_param('firstpause', None)
-        self.secondpause = rospy.get_param('secondpause', None)
-        self.switch = rospy.get_param('switch', None)
         self.talker()
         sleep(1)
-        if self.switch = 1:
-          for x in range(3):
-            rospy.loginfo("Going Straight")
-            self.v_left = 0.5
-            self.v_right = 0.5
-            self.talker()
-            sleep(self.firstpause)
-            rospy.loginfo("Turning")
-            self.v_left = 0.2
-            self.v_right = 0.5
-            self.talker()
-            sleep(self.secondpause)
-            rospy.loginfo("Looping")
-          self.v_left = 0
-          self.v_right = 0
-          self.talker()
+        while not rospy.is_shutdown():
+            self.firstpause = rospy.get_param('firstpause', None)
+            self.secondpause = rospy.get_param('secondpause', None)
+            self.switch = rospy.get_param('switch', None)
+            self.turnvel = rospy.get_param('turnvel', None)
+            if self.switch = 1:
+                rospy.loginfo("Going Straight")
+                self.v_left = 0.5
+                self.v_right = 0.5
+                self.talker()
+                sleep(self.firstpause)
+                rospy.loginfo("Turning")
+                self.v_left = self.turnvel
+                self.v_right = 0.5
+                self.talker()
+                sleep(self.secondpause)
+                rospy.loginfo("Looping")
+            if self.switch == 0:
+                self.v_left = 0
+                self.v_right = 0
+                self.talker()
 
     def talker(self):
         msg = WheelsCmdStamped(None, self.v_left, self.v_right) #change to correct type
