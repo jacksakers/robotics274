@@ -1,0 +1,28 @@
+#lane_control/lane_controller_node
+v_bar: 0.18
+k_d: -6.0
+k_theta: -4
+k_Id: -0.3
+k_Iphi: 0.3
+theta_thres: 0.523
+d_thres: 0.2615
+d_offset: -0.02
+k_Dd: -0.3
+k_Dphi: -0.25
+
+
+omega_ff: 0
+
+integral_bounds:
+  d:
+    top: 0.3
+    bot: -0.3
+  phi:
+    top: 1.2
+    bot: -1.2
+
+# TODO: lane filter should publish this information
+d_resolution: 0.011
+phi_resolution: 0.051
+
+verbose: 0
