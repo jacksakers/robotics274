@@ -51,10 +51,7 @@ class LaneController:
         if self.phi_I < -1.2:
             self.d_I = -1.2
 
-        #rospy.loginfo("d: %s" % d_err)
-        #rospy.loginfo("phi: %s" % phi_err)
-
-        omega = (
+        v_left = (
             rospy.get_param('~/p', None) * d_err
             + rospy.get_param('~/p', None) * phi_err
             + self.d_I * rospy.get_param('~/i', None)
@@ -64,19 +61,15 @@ class LaneController:
         )
 
         
-        if omega > 5:
-            omega = 5
-        if omega < -5:
-            omega = -5
-        #if phi_err > -0.3 and phi_err < 0.3:
-        #    omega = 0
+        if v_left > rospy.get_param('~/vel_max', None):
+            v_left = rospy.get_param('~/vel_max', None)
+        if v_left < rospy.get_param('~/vel_min', None):
+            v_left = rospy.get_param('~/vel_min', None)
 
         self.prev_d_err = d_err
         self.prev_phi_err = phi_err
-         
-        v = self.parameters["~v_bar"].value - np.abs(d_err)
 
-        return v, omega
+        return v_left
 
 
 
