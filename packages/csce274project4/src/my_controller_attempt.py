@@ -55,12 +55,12 @@ class LaneController:
         #rospy.loginfo("phi: %s" % phi_err)
 
         omega = (
-            self.parameters["~k_d"].value * d_err
-            + self.parameters["~k_theta"].value * phi_err
-            + self.d_I * self.parameters["~k_Id"].value
-            + self.phi_I * self.parameters["~k_Iphi"].value
-            + self.d_deriv * self.parameters["~k_Dd"].value
-            + self.phi_deriv * self.parameters["~k_Dphi"].value
+            rospy.get_param('~/p', None) * d_err
+            + rospy.get_param('~/p', None) * phi_err
+            + self.d_I * rospy.get_param('~/i', None)
+            + self.phi_I * rospy.get_param('~/i', None)
+            + self.d_deriv * rospy.get_param('~/d', None)
+            + self.phi_deriv * rospy.get_param('~/d', None)
         )
 
         
