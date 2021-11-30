@@ -6,8 +6,7 @@ class LaneController:
 
     #This is my attempt at a PID controller.
 
-    def __init__(self, parameters):
-        self.parameters = parameters
+    def __init__(self):
         self.prev_d_err = 1.0
         self.prev_phi_err = 1.0
         self.d_deriv = 0.0
@@ -16,9 +15,6 @@ class LaneController:
         self.phi_I = 0.0
         d_err_array = [0, 0, 0, 0]
         self.omega_array = [0, 0, 0, 0]
-
-    def update_parameters(self, parameters):
-        self.parameters = parameters
 
     def compute_control_action(self, d_err, phi_err, dt, wheels_cmd_exec):
 
@@ -52,19 +48,19 @@ class LaneController:
             self.d_I = -1.2
 
         v_left = (
-            rospy.get_param('project4/p', None) * d_err
-            + rospy.get_param('project4/p', None) * phi_err
-            + self.d_I * rospy.get_param('project4/i', None)
-            + self.phi_I * rospy.get_param('project4/i', None)
-            + self.d_deriv * rospy.get_param('project4/d', None)
-            + self.phi_deriv * rospy.get_param('project4/d', None)
+            rospy.get_param('/duck32/project4/p', None) * d_err
+            + rospy.get_param('/duck32/project4/p', None) * phi_err
+            + self.d_I * rospy.get_param('/duck32/project4/i', None)
+            + self.phi_I * rospy.get_param('/duck32/project4/i', None)
+            + self.d_deriv * rospy.get_param('/duck32/project4/d', None)
+            + self.phi_deriv * rospy.get_param('/duck32/project4/d', None)
         )
 
         
-        if v_left > rospy.get_param('project4/vel_max', None):
-            v_left = rospy.get_param('project4/vel_max', None)
-        if v_left < rospy.get_param('project4/vel_min', None):
-            v_left = rospy.get_param('project4/vel_min', None)
+        if v_left > rospy.get_param('/duck32/project4/vel_max', None):
+            v_left = rospy.get_param('/duck32/project4/vel_max', None)
+        if v_left < rospy.get_param('/duck32/project4/vel_min', None):
+            v_left = rospy.get_param('/duck32/project4/vel_min', None)
 
         self.prev_d_err = d_err
         self.prev_phi_err = phi_err
