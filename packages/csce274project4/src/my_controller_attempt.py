@@ -62,6 +62,8 @@ class LaneController:
         if v_left < rospy.get_param('/duck32/project4/vel_min', None):
             v_left = rospy.get_param('/duck32/project4/vel_min', None)
 
+            
+        rospy.loginfo("v_left: %s" % v_left)
         self.prev_d_err = d_err
         self.prev_phi_err = phi_err
 
