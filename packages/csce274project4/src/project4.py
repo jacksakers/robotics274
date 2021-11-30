@@ -22,31 +22,8 @@ class LaneControllerNode(DTROS):
 
         super(LaneControllerNode, self).__init__(node_name=node_name, node_type=NodeType.PERCEPTION)
 
-        self.params = dict()
-        self.params["~v_bar"] = DTParam("~v_bar", param_type=ParamType.FLOAT, min_value=0.0, max_value=5.0)
-        self.params["~k_d"] = DTParam("~k_d", param_type=ParamType.FLOAT, min_value=-100.0, max_value=100.0)
-        self.params["~k_theta"] = DTParam(
-            "~k_theta", param_type=ParamType.FLOAT, min_value=-100.0, max_value=100.0
-        )
-        self.params["~k_Id"] = DTParam("~k_Id", param_type=ParamType.FLOAT, min_value=-100.0, max_value=100.0)
-        self.params["~k_Iphi"] = DTParam(
-            "~k_Iphi", param_type=ParamType.FLOAT, min_value=-100.0, max_value=100.0
-        )
-        
-        self.params["~k_Dd"] = DTParam("~k_Dd", param_type=ParamType.FLOAT, min_value=-100.0, max_value=100.0)
-        self.params["~k_Dphi"] = DTParam(
-            "~k_Dphi", param_type=ParamType.FLOAT, min_value=-100.0, max_value=100.0
-        )
-        self.params["~theta_thres"] = rospy.get_param("~theta_thres", None)
-        self.params["~d_thres"] = rospy.get_param("~d_thres", None)
-        self.params["~d_offset"] = rospy.get_param("~d_offset", None)
-        self.params["~integral_bounds"] = rospy.get_param("~integral_bounds", None)
-        self.params["~d_resolution"] = rospy.get_param("~d_resolution", None)
-        self.params["~phi_resolution"] = rospy.get_param("~phi_resolution", None)
-        self.params["~omega_ff"] = rospy.get_param("~omega_ff", None)
-        self.params["~verbose"] = rospy.get_param("~verbose", None)
 
-        self.controller = LaneController(self.params)
+        self.controller = LaneController()
 
         self.fsm_state = None
         self.wheels_cmd_executed = WheelsCmdStamped()
@@ -103,14 +80,14 @@ class LaneControllerNode(DTROS):
     def publishCmd(self, car_cmd_msg):
         if self.checker == 1:
             self.pub_car_cmd.publish(car_cmd_msg)
-            self.log("Duck: %s" % rospy.get_param('project4/duck', None))
-            self.log("vel_min: %s" % rospy.get_param('project4/vel_min', None))
-            self.log("vel_max: %s" % rospy.get_param('project4/vel_max', None))
+            self.log("Duck: %s" % rospy.get_param('/duck32/project4/duck', None))
+            self.log("vel_min: %s" % rospy.get_param('/duck32/project4/vel_min', None))
+            self.log("vel_max: %s" % rospy.get_param('/duck32/project4/vel_max', None))
             self.log("vel_left: %s" % self.v_left)
             self.log("vel_right: %s" % self.v_right)
-            self.log("p: %s" % rospy.get_param('project4/p', None))
-            self.log("i: %s" % rospy.get_param('project4/i', None))
-            self.log("d: %s" % rospy.get_param('project4/d', None))
+            self.log("p: %s" % rospy.get_param('/duck32/project4/p', None))
+            self.log("i: %s" % rospy.get_param('/duck32/project4/i', None))
+            self.log("d: %s" % rospy.get_param('/duck32/project4/d', None))
 
     def getControlAction(self, pose_msg):
         current_s = rospy.Time.now().to_sec()
@@ -118,16 +95,16 @@ class LaneControllerNode(DTROS):
         if self.last_s is not None:
             dt = current_s - self.last_s
 
-        d_err = pose_msg.d - self.params["~d_offset"]
+        d_err = pose_msg.d
         phi_err = pose_msg.phi
         
 
-        if np.abs(d_err) > self.params["~d_thres"]:
+        if np.abs(d_err) > 5:
             self.log("d_err too large, thresholding it!", "error")
-            d_err = np.sign(d_err) * self.params["~d_thres"]
+            d_err = np.sign(d_err) * 5
         wheels_cmd_exec = [1,1]
         
-        self.v_right = rospy.get_param('project4/vel_max', None)
+        self.v_right = rospy.get_param('/duck32/project4/vel_max', None)
         self.v_left = self.controller.compute_control_action(
            d_err, phi_err, dt, wheels_cmd_exec
         )
@@ -137,12 +114,6 @@ class LaneControllerNode(DTROS):
         
         self.publishCmd(car_control_msg)
         self.last_s = current_s
-
-    def cbParametersChanged(self):
-        """Updates parameters in the controller object."""
-
-        self.controller.update_parameters(self.params)
-
 
 if __name__ == "__main__":
     # Initialize the node
