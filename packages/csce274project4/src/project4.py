@@ -103,14 +103,14 @@ class LaneControllerNode(DTROS):
     def publishCmd(self, car_cmd_msg):
         if self.checker == 1:
             self.pub_car_cmd.publish(car_cmd_msg)
-            self.log("Duck: %s" % rospy.get_param('~/duck', None))
-            self.log("vel_min: %s" % rospy.get_param('~/vel_min', None))
-            self.log("vel_max: %s" % rospy.get_param('~/vel_max', None))
+            self.log("Duck: %s" % rospy.get_param('project4/duck', None))
+            self.log("vel_min: %s" % rospy.get_param('project4/vel_min', None))
+            self.log("vel_max: %s" % rospy.get_param('project4/vel_max', None))
             self.log("vel_left: %s" % self.v_left)
             self.log("vel_right: %s" % self.v_right)
-            self.log("p: %s" % rospy.get_param('~/p', None))
-            self.log("i: %s" % rospy.get_param('~/i', None))
-            self.log("d: %s" % rospy.get_param('~/d', None))
+            self.log("p: %s" % rospy.get_param('project4/p', None))
+            self.log("i: %s" % rospy.get_param('project4/i', None))
+            self.log("d: %s" % rospy.get_param('project4/d', None))
 
     def getControlAction(self, pose_msg):
         current_s = rospy.Time.now().to_sec()
@@ -127,7 +127,7 @@ class LaneControllerNode(DTROS):
             d_err = np.sign(d_err) * self.params["~d_thres"]
         wheels_cmd_exec = [1,1]
         
-        self.v_right = rospy.get_param('~/vel_max', None)
+        self.v_right = rospy.get_param('project4/vel_max', None)
         self.v_left = self.controller.compute_control_action(
            d_err, phi_err, dt, wheels_cmd_exec
         )
