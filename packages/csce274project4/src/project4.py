@@ -60,7 +60,7 @@ class LaneControllerNode(DTROS):
 
         # Construct publishers
         self.pub_car_cmd = rospy.Publisher(
-            "/duck32/car_cmd_switch_node/cmd", Twist2DStamped, queue_size=1, dt_topic_type=TopicType.CONTROL
+            "/duck32/wheels_driver_node/wheels_cmd", WheelsCmdStamped, queue_size=1, dt_topic_type=TopicType.CONTROL
         )
 
         # Construct subscribers
@@ -103,7 +103,14 @@ class LaneControllerNode(DTROS):
     def publishCmd(self, car_cmd_msg):
         if self.checker == 1:
             self.pub_car_cmd.publish(car_cmd_msg)
-            rospy.loginfo("JACK SAKERS LANE FOLLOWER IS WORKING!")
+            self.log("Duck: %s" % rospy.get_param('~/duck', None))
+            self.log("vel_min: %s" % rospy.get_param('~/vel_min', None))
+            self.log("vel_max: %s" % rospy.get_param('~/vel_max', None))
+            self.log("vel_left: %s" % self.v_left)
+            self.log("vel_right: %s" % self.v_right)
+            self.log("p: %s" % rospy.get_param('~/p', None))
+            self.log("i: %s" % rospy.get_param('~/i', None))
+            self.log("d: %s" % rospy.get_param('~/d', None))
 
     def getControlAction(self, pose_msg):
         current_s = rospy.Time.now().to_sec()
@@ -120,8 +127,8 @@ class LaneControllerNode(DTROS):
             d_err = np.sign(d_err) * self.params["~d_thres"]
         wheels_cmd_exec = [1,1]
         
-         
-        v, omega = self.controller.compute_control_action(
+        self.v_right = rospy.get_param('~/vel_max', None)
+        self.v_left = self.controller.compute_control_action(
            d_err, phi_err, dt, wheels_cmd_exec
         )
 
@@ -129,12 +136,7 @@ class LaneControllerNode(DTROS):
         #self.log("omega: %s" % omega)
 
         # Initialize car control msg, add header from input message
-        car_control_msg = Twist2DStamped()
-        car_control_msg.header = pose_msg.header
-
-        # Add commands to car message
-        car_control_msg.v = v
-        car_control_msg.omega = omega
+        car_control_msg = WheelsCmdStamped(None, self.v_left, self.v_right)
         
         self.publishCmd(car_control_msg)
         self.last_s = current_s
