@@ -132,9 +132,6 @@ class LaneControllerNode(DTROS):
            d_err, phi_err, dt, wheels_cmd_exec
         )
 
-        #self.log("v: %s" % v)
-        #self.log("omega: %s" % omega)
-
         # Initialize car control msg, add header from input message
         car_control_msg = WheelsCmdStamped(None, self.v_left, self.v_right)
         
