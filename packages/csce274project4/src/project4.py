@@ -66,7 +66,7 @@ class LaneControllerNode(DTROS):
             self.checker = 0
         self.current_pose_source = "lane_filter"
 
-        if self.params["~verbose"] == 2:
+        if 2 == 2:
             self.log("Pose source: %s" % self.current_pose_source)
 
     def cbAllPoses(self, input_pose_msg, pose_source):
