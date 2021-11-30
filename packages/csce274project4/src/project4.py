@@ -80,14 +80,12 @@ class LaneControllerNode(DTROS):
     def publishCmd(self, car_cmd_msg):
         if self.checker == 1:
             self.pub_car_cmd.publish(car_cmd_msg)
-            rospy.logerr("Duck: %s" % rospy.get_param('/duck32/project4/duck', None))
-            rospy.logerr("vel_min: %s" % rospy.get_param('/duck32/project4/vel_min', None))
-            rospy.logerr("vel_max: %s" % rospy.get_param('/duck32/project4/vel_max', None))
-            rospy.logerr("vel_left: %s" % self.v_left)
-            rospy.logerr("vel_right: %s" % self.v_right)
             rospy.logerr("p: %s" % rospy.get_param('/duck32/project4/p', None))
             rospy.logerr("i: %s" % rospy.get_param('/duck32/project4/i', None))
             rospy.logerr("d: %s" % rospy.get_param('/duck32/project4/d', None))
+            rospy.logerr("Duck: %s" % rospy.get_param('/duck32/project4/duck', None))
+            rospy.logerr("vel_min: %s" % rospy.get_param('/duck32/project4/vel_min', None))
+            rospy.logerr("vel_max: %s" % rospy.get_param('/duck32/project4/vel_max', None))
 
     def getControlAction(self, pose_msg):
         current_s = rospy.Time.now().to_sec()
@@ -103,7 +101,8 @@ class LaneControllerNode(DTROS):
             self.log("d_err too large, thresholding it!", "error")
             d_err = np.sign(d_err) * 5
         wheels_cmd_exec = [1,1]
-        
+        rospy.logerr("vel_left: %s" % self.v_left)
+        rospy.logerr("vel_right: %s" % self.v_right)
         self.v_right = rospy.get_param('/duck32/project4/vel_max', None)
         self.v_left = self.controller.compute_control_action(
            d_err, phi_err, dt, wheels_cmd_exec
