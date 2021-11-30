@@ -52,19 +52,19 @@ class LaneController:
             self.d_I = -1.2
 
         v_left = (
-            rospy.get_param('~/p', None) * d_err
-            + rospy.get_param('~/p', None) * phi_err
-            + self.d_I * rospy.get_param('~/i', None)
-            + self.phi_I * rospy.get_param('~/i', None)
-            + self.d_deriv * rospy.get_param('~/d', None)
-            + self.phi_deriv * rospy.get_param('~/d', None)
+            rospy.get_param('project4/p', None) * d_err
+            + rospy.get_param('project4/p', None) * phi_err
+            + self.d_I * rospy.get_param('project4/i', None)
+            + self.phi_I * rospy.get_param('project4/i', None)
+            + self.d_deriv * rospy.get_param('project4/d', None)
+            + self.phi_deriv * rospy.get_param('project4/d', None)
         )
 
         
-        if v_left > rospy.get_param('~/vel_max', None):
-            v_left = rospy.get_param('~/vel_max', None)
-        if v_left < rospy.get_param('~/vel_min', None):
-            v_left = rospy.get_param('~/vel_min', None)
+        if v_left > rospy.get_param('project4/vel_max', None):
+            v_left = rospy.get_param('project4/vel_max', None)
+        if v_left < rospy.get_param('project4/vel_min', None):
+            v_left = rospy.get_param('project4/vel_min', None)
 
         self.prev_d_err = d_err
         self.prev_phi_err = phi_err
